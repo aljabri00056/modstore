@@ -1,11 +1,14 @@
 from loguru import logger
 import subprocess
 from pathlib import Path
+import json
 from src.modstore import AppsConfig
-from src.modstore.utilities import get_latest_version_from_appstore, download_dylibs, upload_app, download_file_from_url
+from src.modstore.utilities import get_latest_version_from_appstore, download_dylibs, upload_app, download_file_from_url, create_altstore_source
 from src.modstore.decryptors import decrypt_app
 
+source_file = Path("source.json")
 apps_file = "apps.yaml"
+has_been_modified = False
 apps_config = AppsConfig.from_yaml_file(apps_file)
 logger.info(f"Loaded apps configuration from {apps_file}")
 
@@ -21,6 +24,7 @@ for app in apps_config.apps:
                 f"Updating app {app.name} with new version {latest_version.version}")
             app.versions.insert(0, latest_version)
             apps_config.to_yaml_file(apps_file)
+            has_been_modified = True
 
     except Exception as e:
         logger.error(f"Error processing {app.name}: {e}")
@@ -50,6 +54,7 @@ for app in apps_config.apps:
             logger.info(f"Uploaded app {app.name} to UDrop: {download_url}")
             app.versions[0].decrypted_url = download_url
             apps_config.to_yaml_file(apps_file)
+            has_been_modified = True
         except Exception as e:
             logger.error(f"Error uploading app {app.name}: {e}")
             continue
@@ -117,9 +122,16 @@ for app in apps_config.apps:
             app.versions[0].tweaked_url = download_url
             app.versions[0].size = tweaked_filename.stat().st_size
             apps_config.to_yaml_file(apps_file)
+            has_been_modified = True
             tweaked_filename.unlink(missing_ok=True)
         except Exception as e:
             logger.error(f"Error uploading tweaked app {app.name}: {e}")
             continue
 
         logger.info(f"Successfully processed tweaked app {app.name}")
+
+
+if has_been_modified:
+    logger.info("Apps configuration has been modified, updating source file...")
+    source_file.write_text(json.dumps(
+        create_altstore_source(apps_config), indent=2))
