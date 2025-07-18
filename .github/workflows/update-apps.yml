@@ -1,0 +1,46 @@
+name: Update Apps
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-apps:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run update apps script
+      run: uv run update_apps.py
+
+    - name: Check for changes
+      id: git-check
+      run: |
+        git diff --exit-code apps.yaml source.json || echo "changes=true" >> $GITHUB_OUTPUT
+    
+    - name: Commit and push changes
+      if: steps.git-check.outputs.changes == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add apps.yaml source.json
+        git commit -m "Auto-update apps configuration and source [skip ci]"
+        git push
+    
+    - name: No changes detected
+      if: steps.git-check.outputs.changes != 'true'
+      run: echo "No changes detected in apps.yaml or source.json"
