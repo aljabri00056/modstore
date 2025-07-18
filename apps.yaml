@@ -1,0 +1,16 @@
+apps:
+- name: Infuse
+  bundle_id: com.firecore.infuse
+  store_url: https://apps.apple.com/sa/app/infuse/id1136220934
+  dylibs:
+  - name: InfusePlus
+    url: https://github.com/dayanch96/InfusePlus/releases/download/v2.2/com.dvntm.infuseplus_2.2_iphoneos-arm64.deb
+  versions:
+
+- name: YouTube Music
+  bundle_id: com.google.ios.youtubemusic
+  store_url: https://apps.apple.com/sa/app/youtube-music/id1017492454
+  dylibs:
+  - name: YTMusicUltimate
+    url: https://github.com/dayanch96/YTMusicUltimate/releases/download/v2.3.1/com.ginsu.ytmusicultimate_2.3.1_iphoneos-arm64.deb
+  versions:

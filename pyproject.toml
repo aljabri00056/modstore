@@ -1,0 +1,25 @@
+[project]
+name = "modstore"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "aljabri00056", email = "aljabri00056@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cyan>=0.0.1",
+    "loguru>=0.7.3",
+    "pydantic>=2.11.7",
+    "pyrofork>=2.3.68",
+    "python-dotenv>=1.1.1",
+    "pyyaml>=6.0.2",
+    "requests>=2.32.4",
+    "tgcrypto>=1.2.5",
+]
+[project.scripts]
+test = "modstore:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
