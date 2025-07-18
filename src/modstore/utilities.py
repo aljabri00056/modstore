@@ -2,7 +2,7 @@ import re
 import requests
 from pathlib import Path
 from loguru import logger
-from .models import Version, DyLib
+from .models import Version, DyLib, AppsConfig
 from .udrop_client import UDropClient, UDropAPIError
 
 
@@ -101,3 +101,52 @@ def upload_app(file_path: str, new_name: str = None) -> str:
             f"UDrop API Error: {e.message} (Status Code: {e.status_code})")
     except Exception as e:
         raise Exception(f"Unexpected error during upload: {e}")
+
+
+def create_altstore_source(apps_config: AppsConfig) -> dict:
+    source = {
+        "name": "ModStore",
+        "iconURL": "https://i.imgur.com/tbKxYZi.png",
+        "website": "https://github.com/aljabri00056/modstore",
+        "tintColor": "#000000",
+        "apps": [],
+        "news": []
+    }
+
+    for app in apps_config.apps:
+        app_info = get_app_info(app.url)
+
+        app_data = {
+            "name": app.name,
+            "bundleIdentifier": app.bundle_id,
+            "marketplaceID": None,
+            "developerName": app_info['artistName'],
+            "subtitle": ", ".join([dylib.name for dylib in app.dylibs]),
+            "localizedDescription": app_info['description'],
+            "iconURL": app_info['artworkUrl512'],
+            "tintColor": "#357CFF",
+            "category": "other",
+            "screenshots": None,
+            "versions": [],
+            "appPermissions": None,
+            "patreon": None
+        }
+
+        for version in app.versions:
+            version_data = {
+                "version": version.version,
+                "buildVersion": version.version,
+                "date": version.date,
+                "localizedDescription": version.description,
+                "downloadURL": version.tweaked_url,
+                "assetURLs": None,
+                "size": version.size,
+                "minOSVersion": version.minOSVersion,
+                "maxOSVersion": None,
+                "marketingVersion": None
+            }
+            app_data["versions"].append(version_data)
+
+        source["apps"].append(app_data)
+
+    return source
